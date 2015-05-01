@@ -1,0 +1,16 @@
+[
+{
+  "modid": "fluxedcrystals",
+  "name": "Fluxed-Crystals",
+  "description": "RF-Powered Crystal Farming!",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Jaredlll08, Darkbyte"],
+  "credits": "Roze, for the amazing crystal texture",
+  "logoFile": "FCLogo.png",
+  "screenshots": [],
+  "dependencies": []
+}
+]
