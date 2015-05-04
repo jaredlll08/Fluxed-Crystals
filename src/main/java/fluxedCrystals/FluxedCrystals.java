@@ -37,7 +37,6 @@ import fluxedCrystals.config.ConfigHandler;
 import fluxedCrystals.handlers.RecipeHandler;
 import fluxedCrystals.items.FCItems;
 import fluxedCrystals.nei.FluxedCrystalsNEIConfig;
-import fluxedCrystals.network.MessageJSONSync;
 import fluxedCrystals.network.PacketHandler;
 import fluxedCrystals.proxy.CommonProxy;
 import fluxedCrystals.utils.Events;
@@ -88,7 +87,6 @@ public class FluxedCrystals {
 		MinecraftForge.EVENT_BUS.register(new Events());
 		if (Loader.isModLoaded("MineTweaker3"))
 			TweakerPlugin.register(ModProps.modid, FluxedCrystalsMT.class);
-		PacketHandler.INSTANCE.sendToAll(new MessageJSONSync());
 	}
 
 	@EventHandler
@@ -115,6 +113,5 @@ public class FluxedCrystals {
 				RecipeRegistry.registerGemRefinerRecipe(new RecipeGemRefiner(new ItemStack(FCItems.shard, 1, i), r.getIngredient(), r.getRefinerAmount(), RecipeRegistry.getDropAmount(r.getDropMin(), r.getDropMax())));
 			}
 		}
-		PacketHandler.INSTANCE.sendToAll(new MessageJSONSync());
 	}
 }

@@ -2,34 +2,20 @@ package fluxedCrystals.utils;
 
 import java.util.Random;
 
-import minetweaker.mc1710.ForgeEventHandler;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.event.RenderLivingEvent;
-import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
-import net.minecraftforge.event.world.BlockEvent;
 
 import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent;
-import fluxedCrystals.network.MessageJSONSync;
-import fluxedCrystals.network.PacketHandler;
 
 public class EventHandler {
 	public boolean resetRender;
 	public float trans = 0;
 	public boolean descending;
-
-	@SubscribeEvent
-	public void sync(PlayerEvent.PlayerLoggedInEvent e) {
-		PacketHandler.INSTANCE.sendToAll(new MessageJSONSync());
-	}
 
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
 	public void render(RenderLivingEvent.Pre event) {

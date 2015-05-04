@@ -2,7 +2,7 @@ package fluxedCrystals.config;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -65,8 +65,8 @@ public class ConfigHandler extends AbstractConfigHandler {
 
 		ModToken token = new ModToken(FluxedCrystals.class, ModProps.modid + "/misc/");
 
-		String basePath = FluxedCrystals.configDir.getAbsolutePath();
-		ArrayList<File> cropFiles = convertArrayToList(FluxedCrystals.configDir.listFiles((FileFilter) FileFilterUtils.suffixFileFilter(".json")));
+        String basePath = FluxedCrystals.configDir.getAbsolutePath();
+        List<File> cropFiles = Arrays.asList(FluxedCrystals.configDir.listFiles((FileFilter) FileFilterUtils.suffixFileFilter(".json")));
 
 		File crops = new File(basePath + "/crystal.json");
 		File thermalCrops = new File(basePath + "/thermalCrystal.json");
@@ -85,19 +85,17 @@ public class ConfigHandler extends AbstractConfigHandler {
 			}
 		}
 
-		Collections.sort(cropFiles, new Comparator() {
-			public int compare(final Object o1, final Object o2) {
-				return new String(((File) o1).getName()).toLowerCase().compareTo(new String(((File) o2).getName()).toLowerCase());
+		Collections.sort(cropFiles, new Comparator<File>() {
+			public int compare(File o1, File o2) {
+				return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
 			}
 		});
 
 		JsonConfigReader<SeedType> cropReader;
-		List<SeedCrystalRecipe> recipes = RecipeRegistry.getSeedCropRecipes();
 		for (int i = 0; i < cropFiles.size(); i++) {
 			if (cropFiles.get(i) != null) {
 				cropReader = new JsonConfigReader<SeedType>(token, cropFiles.get(i), SeedType.class);
 				registerAll(cropReader.getElements());
-
 			}
 		}
 		for (int i = 0; i < RecipeRegistry.getSeedCropRecipes().size(); i++) {
@@ -117,13 +115,5 @@ public class ConfigHandler extends AbstractConfigHandler {
 		for (ISeedType type : types) {
 			type.register();
 		}
-	}
-
-	public static ArrayList<File> convertArrayToList(File[] files) {
-		ArrayList<File> returnList = new ArrayList<File>();
-		for (File file : files) {
-			returnList.add(file);
-		}
-		return returnList;
 	}
 }
