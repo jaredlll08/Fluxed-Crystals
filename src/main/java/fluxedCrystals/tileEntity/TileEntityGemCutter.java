@@ -20,7 +20,6 @@ import fluxedCrystals.FluxedCrystals;
 import fluxedCrystals.api.RecipeRegistry;
 import fluxedCrystals.api.recipe.RecipeGemCutter;
 import fluxedCrystals.items.FCItems;
-import fluxedCrystals.network.MessageGemCutter;
 import fluxedCrystals.network.MessageGemRefiner;
 import fluxedCrystals.network.PacketHandler;
 
@@ -31,23 +30,15 @@ public class TileEntityGemCutter extends TileEnergyBase implements IManaReceiver
 
 	public ItemStack[] items;
 
-	private boolean cutting = false;
 	private int cut = 0;
 	private int timePerCut = 0;
 
+	// -1 if not currently working on any valid recipe
 	private int recipeIndex;
 
 	public int mana;
 	public int MAX_MANA;
 	public boolean RF = true;
-
-	public boolean isCutting() {
-		return cutting;
-	}
-
-	public void setCutting(boolean cutting) {
-		this.cutting = cutting;
-	}
 
 	public int getTimePerCut() {
 		return timePerCut;
@@ -79,13 +70,7 @@ public class TileEntityGemCutter extends TileEnergyBase implements IManaReceiver
 
 	public void updateEntity() {
 		super.updateEntity();
-		if (!worldObj.isRemote && getStackInSlot(0) != null && !cutting) {
-			PacketHandler.INSTANCE.sendToDimension(new MessageGemCutter(xCoord, yCoord, zCoord), worldObj.provider.dimensionId);
-		}
-		if (worldObj.isRemote && getStackInSlot(0) != null && !cutting) {
-			PacketHandler.INSTANCE.sendToServer(new MessageGemCutter(xCoord, yCoord, zCoord));
-		}
-		if (worldObj != null) {
+		if (worldObj != null && !worldObj.isRemote) {
 			if (storage.getEnergyStored() > 0) {
 				if (!isUpgradeActive(new ItemStack(FCItems.upgradeMana)) && !isUpgradeActive(new ItemStack(FCItems.upgradeLP)) && !isUpgradeActive(new ItemStack(FCItems.upgradeEssentia))) {
 					if (getStackInSlot(1) != null) {
@@ -259,11 +244,21 @@ public class TileEntityGemCutter extends TileEnergyBase implements IManaReceiver
 
 	@Override
 	public void setInventorySlotContents(int i, ItemStack itemstack) {
+		
+		boolean changedItem;
+		if(items[i] == null || itemstack == null)
+			changedItem = (items[i] == null) != (itemstack == null); // non-null to null, or vice versa
+		else
+			changedItem = !items[i].isItemEqual(itemstack);
+		
 		items[i] = itemstack;
-
+		
 		if (itemstack != null && itemstack.stackSize > getInventoryStackLimit()) {
 			itemstack.stackSize = getInventoryStackLimit();
 		}
+		
+		if(i == 0 && changedItem)
+			updateCurrentRecipe();
 	}
 
 	public boolean addInventorySlotContents(int i, ItemStack itemstack) {
@@ -286,10 +281,11 @@ public class TileEntityGemCutter extends TileEnergyBase implements IManaReceiver
 	public void readFromNBT(NBTTagCompound tags) {
 		super.readFromNBT(tags);
 		readInventoryFromNBT(tags);
-		cutting = tags.getBoolean("cutting");
 		cut = tags.getInteger("cut");
 		setRecipeIndex(tags.getInteger("recipeIndex"));
 		mana = tags.getInteger("mana");
+		
+		updateCurrentRecipe();
 	}
 
 	public void readInventoryFromNBT(NBTTagCompound tags) {
@@ -307,7 +303,6 @@ public class TileEntityGemCutter extends TileEnergyBase implements IManaReceiver
 	public void writeToNBT(NBTTagCompound tags) {
 		super.writeToNBT(tags);
 		writeInventoryToNBT(tags);
-		tags.setBoolean("cutting", cutting);
 		tags.setInteger("cut", cut);
 		tags.setInteger("recipeIndex", getRecipeIndex());
 		tags.setInteger("mana", mana);
@@ -336,22 +331,17 @@ public class TileEntityGemCutter extends TileEnergyBase implements IManaReceiver
 					cut++;
 					storage.extractEnergy(250, false);
 
-					if (cut == recipe.getInputamount()) {
+					if (cut >= recipe.getInputamount()) {
 						ItemStack out = recipe.getOutput().copy();
 						out.stackSize = recipe.getOutputAmount();
 						addInventorySlotContents(1, out);
-						cutting = false;
 						cut = 0;
-						setRecipeIndex(-1);
-
 					}
 				}
 				return true;
 			}
 		}
 		cut = 0;
-		setRecipeIndex(-1);
-		cutting = false;
 		return false;
 	}
 
@@ -368,7 +358,6 @@ public class TileEntityGemCutter extends TileEnergyBase implements IManaReceiver
 						addInventorySlotContents(1, out);
 						out.stackSize = recipe.getOutputAmount();
 						mana -= 500;
-						cutting = false;
 						cut = 0;
 						setRecipeIndex(-1);
 
@@ -378,8 +367,6 @@ public class TileEntityGemCutter extends TileEnergyBase implements IManaReceiver
 			}
 		}
 		cut = 0;
-		setRecipeIndex(-1);
-		cutting = false;
 		return false;
 	}
 
@@ -395,7 +382,6 @@ public class TileEntityGemCutter extends TileEnergyBase implements IManaReceiver
 						ItemStack out = recipe.getOutput().copy();
 						out.stackSize = recipe.getOutputAmount();
 						addInventorySlotContents(1, out);
-						cutting = false;
 						cut = 0;
 						setRecipeIndex(-1);
 
@@ -405,8 +391,6 @@ public class TileEntityGemCutter extends TileEnergyBase implements IManaReceiver
 			}
 		}
 		cut = 0;
-		setRecipeIndex(-1);
-		cutting = false;
 		return false;
 	}
 
@@ -421,7 +405,6 @@ public class TileEntityGemCutter extends TileEnergyBase implements IManaReceiver
 						ItemStack out = recipe.getOutput().copy();
 						addInventorySlotContents(1, out);
 						out.stackSize = recipe.getOutputAmount();
-						cutting = false;
 						cut = 0;
 						setRecipeIndex(-1);
 
@@ -431,19 +414,19 @@ public class TileEntityGemCutter extends TileEnergyBase implements IManaReceiver
 			}
 		}
 		cut = 0;
-		setRecipeIndex(-1);
-		cutting = false;
 		return false;
 	}
 
-	public void setRefining(boolean infusing) {
-		this.cutting = infusing;
+	public void updateCurrentRecipe() {
 		int number = -1;
 		setRecipeIndex(number);
-		if (getStackInSlot(0) != null)
+		
+		ItemStack inputStack = getStackInSlot(0);
+		
+		if (inputStack != null && inputStack.stackSize > 0)
 			for (RecipeGemCutter recipe : RecipeRegistry.getGemCutterRecipes()) {
 				number++;
-				if (recipe.matchesExact(getStackInSlot(0))) {
+				if (recipe.matchesExact(inputStack)) {
 					setRecipeIndex(number);
 					break;
 				}
