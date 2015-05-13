@@ -65,7 +65,7 @@ public class BlockCrystal extends CrystalBase implements ITileEntityProvider, IW
 				}
 			}
 		}
-		if (world.getBlockMetadata(x, y, z) == 7 && power.isUpgradeActive(new ItemStack(FCItems.upgradeAutomation)) && power.getEnergyStored() >= 250) {
+		if (world.getBlockMetadata(x, y, z) == 7 && power.isUpgradeActive(FCItems.upgradeAutomation) && power.getEnergyStored() >= 250) {
 			doDrop(crystal, world, x, y, z, 0, false);
 			world.setBlockMetadataWithNotify(x, y, z, 0, 3);
 			power.storage.extractEnergy(250, false);
@@ -181,35 +181,35 @@ public class BlockCrystal extends CrystalBase implements ITileEntityProvider, IW
 			if (player != null && player.getCurrentEquippedItem() != null) {
 				ItemStack stack = player.getCurrentEquippedItem();
 				if (stack != null && stack.getItem() instanceof ItemScythe) {
-					if (stack.isItemEqual(new ItemStack(FCItems.scytheWood))) {
+					if (stack.getItem() == FCItems.scytheWood) {
 						if (world.rand.nextInt(4) == 0) {
 							dropCropDrops(world, x, y, z, RecipeRegistry.getDropAmount(crop.getIndex()), true);
 						} else {
 							dropCropDrops(world, x, y, z, 0, true);
 						}
 					}
-					if (stack.isItemEqual(new ItemStack(FCItems.scytheStone))) {
+					if (stack.getItem() == FCItems.scytheStone) {
 						if (world.rand.nextInt(3) == 0) {
 							dropCropDrops(world, x, y, z, RecipeRegistry.getDropAmount(crop.getIndex()), true);
 						} else {
 							dropCropDrops(world, x, y, z, 0, true);
 						}
 					}
-					if (stack.isItemEqual(new ItemStack(FCItems.scytheIron))) {
+					if (stack.getItem() == FCItems.scytheIron) {
 						if (world.rand.nextInt(2) == 0) {
 							dropCropDrops(world, x, y, z, RecipeRegistry.getDropAmount(crop.getIndex()), true);
 						} else {
 							dropCropDrops(world, x, y, z, 0, true);
 						}
 					}
-					if (stack.isItemEqual(new ItemStack(FCItems.scytheGold))) {
+					if (stack.getItem() == FCItems.scytheGold) {
 						if (world.rand.nextInt(1) == 0) {
 							dropCropDrops(world, x, y, z, RecipeRegistry.getDropAmount(crop.getIndex()), true);
 						} else {
 							dropCropDrops(world, x, y, z, 0, true);
 						}
 					}
-					if (stack.isItemEqual(new ItemStack(FCItems.scytheDiamond))) {
+					if (stack.getItem() == FCItems.scytheDiamond) {
 						dropCropDrops(world, x, y, z, RecipeRegistry.getDropAmount(crop.getIndex()), true);
 					}
 
@@ -228,27 +228,27 @@ public class BlockCrystal extends CrystalBase implements ITileEntityProvider, IW
 		if (world.getBlockMetadata(x, y, z) >= 7) {
 			ItemStack stack = player.getCurrentEquippedItem();
 			if (stack != null && stack.getItem() instanceof ItemScythe) {
-				if (stack.isItemEqual(new ItemStack(FCItems.scytheWood))) {
+				if (stack.getItem() == FCItems.scytheWood) {
 					if (world.rand.nextInt(4) == 0) {
 						dropCropDrops(world, x, y, z, RecipeRegistry.getDropAmount(crop.getIndex()), false);
 					}
 				}
-				if (stack.isItemEqual(new ItemStack(FCItems.scytheStone))) {
+				if (stack.getItem() == FCItems.scytheStone) {
 					if (world.rand.nextInt(3) == 0) {
 						dropCropDrops(world, x, y, z, RecipeRegistry.getDropAmount(crop.getIndex()), false);
 					}
 				}
-				if (stack.isItemEqual(new ItemStack(FCItems.scytheIron))) {
+				if (stack.getItem() == FCItems.scytheIron) {
 					if (world.rand.nextInt(2) == 0) {
 						dropCropDrops(world, x, y, z, RecipeRegistry.getDropAmount(crop.getIndex()), false);
 					}
 				}
-				if (stack.isItemEqual(new ItemStack(FCItems.scytheGold))) {
+				if (stack.getItem() == FCItems.scytheGold) {
 					if (world.rand.nextInt(1) == 0) {
 						dropCropDrops(world, x, y, z, RecipeRegistry.getDropAmount(crop.getIndex()), false);
 					}
 				}
-				if (stack.isItemEqual(new ItemStack(FCItems.scytheDiamond))) {
+				if (stack.getItem() == FCItems.scytheDiamond) {
 					dropCropDrops(world, x, y, z, RecipeRegistry.getDropAmount(crop.getIndex()), false);
 				}
 			} else {
