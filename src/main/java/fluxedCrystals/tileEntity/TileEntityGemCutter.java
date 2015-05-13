@@ -467,37 +467,8 @@ public class TileEntityGemCutter extends TileEnergyBase implements IManaReceiver
 		return true;
 	}
 
-	public int getEnergyRemainingScaled(int amount) {
-		if (storage.getEnergyStored() == storage.getMaxEnergyStored()) {
-			return storage.getMaxEnergyStored() - 1;
-		}
-		if (storage.getEnergyStored() == 0) {
-			return 1;
-		}
-		return storage.getEnergyStored() * amount / storage.getMaxEnergyStored();
-
-	}
-
-	public double getEnergyColor() {
-		double energy = storage.getEnergyStored();
-		double maxEnergy = storage.getMaxEnergyStored();
-		if (energy == energy) {
-			return energy - 1;
-		}
-		if (energy == 0) {
-			return 1;
-		}
-		return (energy / 255);
-	}
-
 	public double getManaColor() {
-		if (getCurrentMana() == MAX_MANA) {
-			return getCurrentMana() - 1;
-		}
-		if (getCurrentMana() == 0) {
-			return 1;
-		}
-		return (mana / 255);
+		return getCurrentMana() * 255 / MAX_MANA;
 	}
 
 	private static int[] slotsAll = { 0, 1, 2, 3, 4, 5, 6 };
