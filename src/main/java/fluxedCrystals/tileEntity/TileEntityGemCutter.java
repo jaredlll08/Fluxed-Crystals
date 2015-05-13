@@ -20,7 +20,6 @@ import fluxedCrystals.FluxedCrystals;
 import fluxedCrystals.api.RecipeRegistry;
 import fluxedCrystals.api.recipe.RecipeGemCutter;
 import fluxedCrystals.items.FCItems;
-import fluxedCrystals.network.MessageGemRefiner;
 import fluxedCrystals.network.PacketHandler;
 
 /**

@@ -21,7 +21,6 @@ import fluxedCrystals.api.RecipeRegistry;
 import fluxedCrystals.api.recipe.RecipeGemCutter;
 import fluxedCrystals.api.recipe.RecipeGemRefiner;
 import fluxedCrystals.items.FCItems;
-import fluxedCrystals.network.MessageGemRefiner;
 import fluxedCrystals.network.PacketHandler;
 
 /**
@@ -31,7 +30,6 @@ public class TileEntityGemRefiner extends TileEnergyBase implements IInventory, 
 
 	public ItemStack[] items;
 
-	private boolean refining = false;
 	private int refined = 0;
 
 	public int getRecipeIndex() {
@@ -42,14 +40,11 @@ public class TileEntityGemRefiner extends TileEnergyBase implements IInventory, 
 		this.recipeIndex = recipeIndex;
 	}
 
-	public boolean isRefining() {
-		return refining;
-	}
-
 	public int getRefined() {
 		return refined;
 	}
 
+	// -1 if not currently refining
 	private int recipeIndex;
 
 	private int mana;
@@ -67,23 +62,17 @@ public class TileEntityGemRefiner extends TileEnergyBase implements IInventory, 
 
 	public void updateEntity() {
 		super.updateEntity();
-		if(!worldObj.isRemote && getStackInSlot(0) != null && !refining){
-            PacketHandler.INSTANCE.sendToDimension(new MessageGemRefiner(xCoord, yCoord, zCoord), worldObj.provider.dimensionId);
-		}
-		if (worldObj.isRemote && getStackInSlot(0) != null && !refining) {
-			PacketHandler.INSTANCE.sendToServer(new MessageGemRefiner(xCoord, yCoord, zCoord));
-		}
 		if (getStackInSlot(0) != null)
-			if (worldObj != null) {
+			if (worldObj != null && !worldObj.isRemote && getRecipeIndex() >= 0) {
 				if (storage.getEnergyStored() > 0) {
 					if (!isUpgradeActive(new ItemStack(FCItems.upgradeMana)) && !isUpgradeActive(new ItemStack(FCItems.upgradeLP)) && !isUpgradeActive(new ItemStack(FCItems.upgradeEssentia))) {
 						if (getStackInSlot(1) != null) {
-							if (refining && worldObj.getWorldTime() % getSpeed() == 0 && storage.getEnergyStored() >= getEffeciency() && getStackInSlot(1).stackSize < getStackInSlot(1).getMaxStackSize()) {
+							if (worldObj.getWorldTime() % getSpeed() == 0 && storage.getEnergyStored() >= getEffeciency() && getStackInSlot(1).stackSize < getStackInSlot(1).getMaxStackSize()) {
 								storage.extractEnergy(refineShard(), false);
 								return;
 							}
 						} else {
-							if (refining && worldObj.getWorldTime() % getSpeed() == 0 && storage.getEnergyStored() >= getEffeciency()) {
+							if (worldObj.getWorldTime() % getSpeed() == 0 && storage.getEnergyStored() >= getEffeciency()) {
 								storage.extractEnergy(refineShard(), false);
 								return;
 							}
@@ -247,11 +236,20 @@ public class TileEntityGemRefiner extends TileEnergyBase implements IInventory, 
 
 	@Override
 	public void setInventorySlotContents(int i, ItemStack itemstack) {
+		boolean changedItem;
+		if(items[i] == null || itemstack == null)
+			changedItem = (items[i] == null) != (itemstack == null); // non-null to null, or vice versa
+		else
+			changedItem = !items[i].isItemEqual(itemstack);
+		
 		items[i] = itemstack;
-
+		
 		if (itemstack != null && itemstack.stackSize > getInventoryStackLimit()) {
 			itemstack.stackSize = getInventoryStackLimit();
 		}
+		
+		if(i == 0 && changedItem)
+			updateCurrentRecipe();
 	}
 
 	public boolean addInventorySlotContents(int i, ItemStack itemstack) {
@@ -274,10 +272,10 @@ public class TileEntityGemRefiner extends TileEnergyBase implements IInventory, 
 	public void readFromNBT(NBTTagCompound tags) {
 		super.readFromNBT(tags);
 		readInventoryFromNBT(tags);
-		refining = tags.getBoolean("refining");
 		refined = tags.getInteger("refined");
 		setRecipeIndex(tags.getInteger("recipeIndex"));
 		mana = tags.getInteger("mana");
+		updateCurrentRecipe();
 	}
 
 	public void readInventoryFromNBT(NBTTagCompound tags) {
@@ -295,7 +293,6 @@ public class TileEntityGemRefiner extends TileEnergyBase implements IInventory, 
 	public void writeToNBT(NBTTagCompound tags) {
 		super.writeToNBT(tags);
 		writeInventoryToNBT(tags);
-		tags.setBoolean("refining", refining);
 		tags.setInteger("refined", refined);
 		tags.setInteger("recipeIndex", getRecipeIndex());
 		tags.setInteger("mana", mana);
@@ -341,13 +338,9 @@ public class TileEntityGemRefiner extends TileEnergyBase implements IInventory, 
 				ItemStack out = recipe.getOutput().copy();
 				out.stackSize = recipe.getOutputAmount();
                 
-				PacketHandler.INSTANCE.sendToDimension(new MessageGemRefiner(xCoord, yCoord, zCoord, recipeIndex), worldObj.provider.dimensionId);
-                
 				if (addItemToSlot(1, out)) {
 					decrStackSize(0, recipe.getInputamount());
-					refining = false;
 					refined = 0;
-					setRecipeIndex(-1);
 					energyUsed = (250 * recipe.getInputamount());
 				}
 			}
@@ -368,7 +361,6 @@ public class TileEntityGemRefiner extends TileEnergyBase implements IInventory, 
 						ItemStack out = recipe.getOutput().copy();
 						out.stackSize = recipe.getOutputAmount();
 						addInventorySlotContents(1, out);
-						refining = false;
 						refined = 0;
 						setRecipeIndex(-1);
 
@@ -379,7 +371,6 @@ public class TileEntityGemRefiner extends TileEnergyBase implements IInventory, 
 		}
 		refined = 0;
 		setRecipeIndex(-1);
-		refining = false;
 		return false;
 	}
 
@@ -395,7 +386,6 @@ public class TileEntityGemRefiner extends TileEnergyBase implements IInventory, 
 						ItemStack out = recipe.getOutput().copy();
 						out.stackSize = recipe.getOutputAmount();
 						addInventorySlotContents(1, out);
-						refining = false;
 						refined = 0;
 						setRecipeIndex(-1);
 
@@ -406,7 +396,6 @@ public class TileEntityGemRefiner extends TileEnergyBase implements IInventory, 
 		}
 		refined = 0;
 		setRecipeIndex(-1);
-		refining = false;
 		return false;
 	}
 
@@ -422,7 +411,6 @@ public class TileEntityGemRefiner extends TileEnergyBase implements IInventory, 
 						ItemStack out = recipe.getOutput().copy();
 						out.stackSize = recipe.getOutputAmount();
 						addInventorySlotContents(1, out);
-						refining = false;
 						refined = 0;
 						setRecipeIndex(-1);
 
@@ -433,7 +421,6 @@ public class TileEntityGemRefiner extends TileEnergyBase implements IInventory, 
 		}
 		refined = 0;
 		setRecipeIndex(-1);
-		refining = false;
 		return false;
 	}
 
@@ -448,7 +435,6 @@ public class TileEntityGemRefiner extends TileEnergyBase implements IInventory, 
 						ItemStack out = recipe.getOutput().copy();
 						out.stackSize = recipe.getOutputAmount();
 						addInventorySlotContents(1, out);
-						refining = false;
 						refined = 0;
 						setRecipeIndex(-1);
 
@@ -459,12 +445,10 @@ public class TileEntityGemRefiner extends TileEnergyBase implements IInventory, 
 		}
 		refined = 0;
 		setRecipeIndex(-1);
-		refining = false;
 		return false;
 	}
 
-	public void setRefining(boolean infusing) {
-		this.refining = infusing;
+	public void updateCurrentRecipe() {
 		int number = -1;
 		setRecipeIndex(number);
 		if (getStackInSlot(0) != null)
