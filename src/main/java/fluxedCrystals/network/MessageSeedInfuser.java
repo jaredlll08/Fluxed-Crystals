@@ -59,12 +59,6 @@ public class MessageSeedInfuser implements IMessage, IMessageHandler<MessageSeed
 					return new MessageSeedInfuser(x, y, z, index);
 				}
 			}
-		} else {
-			TileEntity te = FluxedCrystals.proxy.getClientWorld().getTileEntity(x, y, z);
-			if (te instanceof TileEntitySeedInfuser) {
-				((TileEntitySeedInfuser) te).setRecipeIndex(message.data);
-				te.getWorldObj().markBlockForUpdate(x, y, z);
-			}
 		}
 		return null;
 	}
