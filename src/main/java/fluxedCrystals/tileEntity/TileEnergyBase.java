@@ -9,15 +9,12 @@ import net.minecraftforge.common.util.ForgeDirection;
 import tterrag.core.common.util.TTStringUtils;
 import cofh.api.energy.EnergyStorage;
 import cofh.api.energy.IEnergyHandler;
-import fluxedCrystals.network.MessageEnergyUpdate;
 import fluxedCrystals.network.PacketHandler;
 import fluxedCrystals.utils.Utils;
 
 public abstract class TileEnergyBase extends TileEntity implements IEnergyHandler {
 	public EnergyStorage storage;
 	protected int capacity;
-
-	private int lastStored = 0;
 
 	public TileEnergyBase(int cap) {
 		super();
@@ -43,16 +40,7 @@ public abstract class TileEnergyBase extends TileEntity implements IEnergyHandle
 		super.updateEntity();
 		if (!worldObj.isRemote) {
 			pushEnergy();
-
-			if (getEnergyStored() != lastStored) {
-				sendPacket();
-				lastStored = getEnergyStored();
-			}
 		}
-	}
-
-	public void sendPacket() {
-		PacketHandler.INSTANCE.sendToDimension(new MessageEnergyUpdate(xCoord, yCoord, zCoord, getEnergyStored()), worldObj.provider.dimensionId);
 	}
 
 	protected void pushEnergy() {

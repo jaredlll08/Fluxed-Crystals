@@ -1,8 +1,11 @@
 package fluxedCrystals.client.gui.gemCutter;
 
+import java.util.List;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.ICrafting;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import fluxedCrystals.client.gui.slot.SlotCustom;
@@ -12,7 +15,11 @@ import fluxedCrystals.items.FCItems;
 import fluxedCrystals.tileEntity.TileEntityGemCutter;
 
 public class ContainerGemCutter extends Container {
+	private TileEntityGemCutter tile;
+	
 	public ContainerGemCutter(InventoryPlayer invPlayer, TileEntityGemCutter manager) {
+		
+		this.tile = manager;
 
 		addSlotToContainer(new Slot(manager, 0, 46, 37));
 		addSlotToContainer(new SlotCustom(manager, 1, 114, 37, 64));
@@ -48,5 +55,27 @@ public class ContainerGemCutter extends Container {
 	public ItemStack transferStackInSlot(EntityPlayer player, int slotNumber) {
 
 		return null;
+	}
+	
+	private int lastStoredEnergy = -1;
+	@Override
+	public void detectAndSendChanges() {
+		super.detectAndSendChanges();
+		
+		if(!tile.getWorldObj().isRemote) {
+			int energyStored = tile.getEnergyStored();
+			// send energy to players viewing this GUI
+			if(energyStored != lastStoredEnergy) {
+				for(ICrafting c : (List<ICrafting>)crafters)
+					c.sendProgressBarUpdate(this, 0, energyStored);
+				lastStoredEnergy = energyStored;
+			}
+		}
+	}
+	
+	@Override
+	public void updateProgressBar(int bar, int value) {
+		if(bar == 0)
+			tile.setEnergyStored(value);
 	}
 }

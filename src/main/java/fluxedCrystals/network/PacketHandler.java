@@ -10,8 +10,6 @@ public class PacketHandler {
 
 	private static int id = 0;
 	public static void init() {
-		INSTANCE.registerMessage(MessageEnergyUpdate.class, MessageEnergyUpdate.class, id++, Side.CLIENT);
-		INSTANCE.registerMessage(MessageEnergyStorage.class, MessageEnergyStorage.class, id++, Side.CLIENT);
 		INSTANCE.registerMessage(MessageBiome.class, MessageBiome.class, id++, Side.CLIENT);
 		INSTANCE.registerMessage(MessageSeedInfuser.class, MessageSeedInfuser.class, id++, Side.CLIENT);
 		INSTANCE.registerMessage(MessageSeedInfuser.class, MessageSeedInfuser.class, id++, Side.SERVER);
