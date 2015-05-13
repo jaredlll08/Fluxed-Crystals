@@ -67,12 +67,12 @@ public class TileEntityGemRefiner extends TileEnergyBase implements IInventory, 
 				if (storage.getEnergyStored() > 0) {
 					if (!isUpgradeActive(new ItemStack(FCItems.upgradeMana)) && !isUpgradeActive(new ItemStack(FCItems.upgradeLP)) && !isUpgradeActive(new ItemStack(FCItems.upgradeEssentia))) {
 						if (getStackInSlot(1) != null) {
-							if (worldObj.getWorldTime() % getSpeed() == 0 && storage.getEnergyStored() >= getEffeciency() && getStackInSlot(1).stackSize < getStackInSlot(1).getMaxStackSize()) {
+							if (worldObj.getTotalWorldTime() % getSpeed() == 0 && storage.getEnergyStored() >= getEffeciency() && getStackInSlot(1).stackSize < getStackInSlot(1).getMaxStackSize()) {
 								storage.extractEnergy(refineShard(), false);
 								return;
 							}
 						} else {
-							if (worldObj.getWorldTime() % getSpeed() == 0 && storage.getEnergyStored() >= getEffeciency()) {
+							if (worldObj.getTotalWorldTime() % getSpeed() == 0 && storage.getEnergyStored() >= getEffeciency()) {
 								storage.extractEnergy(refineShard(), false);
 								return;
 							}

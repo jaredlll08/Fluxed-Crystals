@@ -46,7 +46,7 @@ public class TileEntitySeedInfuser extends TileEntity implements IInventory {
 	}
 
 	public void updateEntity() {
-		if (infusing && worldObj.getWorldTime() % 20 == 0 && !worldObj.isRemote) {
+		if (infusing && worldObj.getTotalWorldTime() % 20 == 0 && !worldObj.isRemote) {
 			infuseSeed();
 		}
 	}
